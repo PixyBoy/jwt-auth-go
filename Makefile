@@ -12,3 +12,6 @@ logs:
 
 ps:
 	docker compose --env-file $(ENV_FILE) -f $(COMPOSE) ps
+
+migrate:
+	docker compose --env-file $(ENV_FILE) -f $(COMPOSE) exec -T api /app/migrate

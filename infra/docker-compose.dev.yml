@@ -11,6 +11,9 @@ services:
       dockerfile: infra/server/Dockerfile
       args:
         - GO_VERSION=${GO_VERSION}
+    command: air
+    volumes:
+      - ./../src:/app/src
     env_file:
       - ./../src/.env
       - ./.env

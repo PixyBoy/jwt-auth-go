@@ -2,31 +2,19 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-	"os"
+	"log"
 
-	"github.com/gin-gonic/gin"
+	"github.com/PixyBoy/jwt-auth-go/internal/app"
 )
 
 func main() {
-	port := getenv("APP_PORT", "8080")
-	r := gin.New()
-	r.Use(gin.Recovery())
-
-	// minimal health endpoint for compose
-	r.GET("/healthz", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"ok": true})
-	})
-
-	addr := fmt.Sprintf(":%s", port)
-	if err := r.Run(addr); err != nil {
-		panic(err)
+	a, err := app.Build()
+	if err != nil {
+		log.Fatalf("boot error: %v", err)
 	}
-}
 
-func getenv(key, def string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
+	addr := fmt.Sprintf(":%s", a.Cfg.AppPort)
+	if err := a.HTTP.Run(addr); err != nil {
+		log.Fatalf("http error: %v", err)
 	}
-	return def
 }
