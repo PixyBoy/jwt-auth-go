@@ -2,9 +2,11 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 
+	redisadp "github.com/PixyBoy/jwt-auth-go/internal/adapters/cache/redis"
 	ginadp "github.com/PixyBoy/jwt-auth-go/internal/adapters/http/gin"
 	"github.com/PixyBoy/jwt-auth-go/internal/pkg/config"
 	"github.com/PixyBoy/jwt-auth-go/internal/pkg/db"
@@ -15,6 +17,7 @@ type App struct {
 	Cfg  *config.Config
 	Log  zerolog.Logger
 	DB   *gorm.DB
+	RDB  *redis.Client
 	HTTP *gin.Engine
 }
 
@@ -41,12 +44,16 @@ func Build() (*App, error) {
 		return nil, err
 	}
 
-	r := ginadp.NewRouter(log, gdb)
+	// Redis Client
+	rdb := redisadp.New(cfg.Redis.Addr, cfg.Redis.Password, cfg.Redis.DB)
+
+	r := ginadp.NewRouter(log, gdb, rdb)
 
 	return &App{
 		Cfg:  cfg,
 		Log:  log,
 		DB:   gdb,
+		RDB:  rdb,
 		HTTP: r,
 	}, nil
 }
