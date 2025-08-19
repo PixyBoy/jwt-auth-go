@@ -1,5 +1,9 @@
 version: "3.9"
 
+networks:
+  appnet:
+    name: jwt_auth_net
+
 services:
   api:
     build:
@@ -17,13 +21,13 @@ services:
       - "${API_PORT}:8080"
     healthcheck:
       test: ["CMD", "sh", "-c", "curl -sf http://localhost:8080/healthz >/dev/null"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
+    networks: [appnet]
 
   mysql:
     image: mysql:${MYSQL_VERSION}
-    command: --default-authentication-plugin=mysql_native_password --lower_case_table_names=1
+    container_name: go-mysql
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -34,21 +38,24 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p ${MYSQL_ROOT_PASSWORD}"]
+    networks: [appnet]
 
   phpmyadmin:
     image: phpmyadmin:${PHPMYADMIN_VERSION}
+    container_name: go-phpmyadmin
+    restart: always
     environment:
       PMA_HOST: mysql
-      PMA_USER: ${MYSQL_USER}
-      PMA_PASSWORD: ${MYSQL_PASSWORD}
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      PMA_ARBITRARY: 1
     depends_on:
       - mysql
     ports:
       - "${PHPMYADMIN_PORT}:80"
+    networks: [appnet]
 
   redis:
     image: redis:${REDIS_VERSION}
@@ -57,11 +64,7 @@ services:
       - "${REDIS_PORT}:6379"
     volumes:
       - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
+    networks: [appnet]
 
 volumes:
   mysql_data:
