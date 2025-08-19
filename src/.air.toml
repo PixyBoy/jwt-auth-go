@@ -1,0 +1,8 @@
+[build]
+cmd = "go build -o ./tmp/main ./cmd/api"
+bin = "tmp/main"
+include_dir = ["cmd", "internal"]
+exclude_dir = ["tmp", "vendor", "infra", "docker"]
+
+[log]
+time = true
