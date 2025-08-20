@@ -9,7 +9,7 @@ Implements **Clean/Hexagonal Architecture**, fully containerized with **Docker**
 - 🔒 JWT HS256 with standard claims (`sub`, `phone`, `iat`, `exp`)
 - 🗄 MySQL + GORM (AutoMigrate)
 - ⚡ Rate limit & temporary blocking
-- 📖 Swagger UI & Prometheus `/metrics`
+- 📖 Swagger UI
 - ⚙️ Config via ENV (Viper)
 - 📝 Structured logging (Zerolog)
 
@@ -51,7 +51,6 @@ make migrate
 - API → http://localhost:8080/healthz
 - DB → /health/db
 - Redis → /health/redis
-- Metrics → /metrics
 - phpMyAdmin → http://localhost:8081 (Server: mysql)
 
 ### 6) Swagger
@@ -122,4 +121,3 @@ curl "http://localhost:8080/v1/users?search=0912&page=1&per_page=20"   -H "Autho
 ## Notes
 
 - Use a **strong, private `JWT_SECRET`** in production.
-- Enable **HTTPS & HSTS** in production environments.
