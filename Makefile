@@ -2,6 +2,9 @@ ENV_FILE=infra/.env
 COMPOSE=infra/docker-compose.dev.yml
 
 up:
+	make build-up && make migrate
+
+build-up:
 	docker compose --env-file $(ENV_FILE) -f $(COMPOSE) up -d --build
 
 down:
