@@ -2,6 +2,7 @@ package app
 
 import (
 	ginadp "github.com/PixyBoy/jwt-auth-go/internal/adapters/http/gin"
+	jwtadp "github.com/PixyBoy/jwt-auth-go/internal/adapters/token/jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
@@ -56,14 +57,18 @@ func Build() (*App, error) {
 	rateLimiter := redisadp.NewRateLimiter(rdb, "")
 	userRepo := mysqladp.NewUserRepo(gdb)
 
+	// issuer
+	jwtIssuer := jwtadp.NewIssuerHS256(cfg.JWT.Secret)
+
 	// Services
 	authSvc := services.NewAuthService(
-		otpStore, rateLimiter, userRepo, log,
+		otpStore, rateLimiter, userRepo, jwtIssuer, log,
 		cfg.OTP.Digits,
 		cfg.OTP.TTLSeconds,
 		cfg.OTP.MaxAttempts,
 		cfg.OTP.RateLimitMax,
 		cfg.OTP.RateLimitWindow,
+		cfg.JWT.TTL,
 	)
 	// Router
 	r := ginadp.NewRouter(log, gdb, rdb)
@@ -71,6 +76,13 @@ func Build() (*App, error) {
 	v1 := ginadp.GroupV1(r)
 	v1.POST("/auth/otp/request", ginadp.RequestOTPHandler(authSvc, log))
 	v1.POST("/auth/otp/verify", ginadp.VerifyOTPHandler(authSvc, log))
+
+	// protected group
+	authz := ginadp.Authz(jwtIssuer)
+	pg := v1.Group("/")
+	pg.Use(authz)
+	pg.GET("users/me", ginadp.GetMeHandler(userRepo))
+	pg.GET("users/:id", ginadp.GetUserByIDHandler(userRepo))
 
 	return &App{
 		Cfg:         cfg,
