@@ -65,9 +65,12 @@ func Build() (*App, error) {
 		cfg.OTP.RateLimitMax,
 		cfg.OTP.RateLimitWindow,
 	)
-
 	// Router
 	r := ginadp.NewRouter(log, gdb, rdb)
+
+	v1 := ginadp.GroupV1(r)
+	v1.POST("/auth/otp/request", ginadp.RequestOTPHandler(authSvc, log))
+	v1.POST("/auth/otp/verify", ginadp.VerifyOTPHandler(authSvc, log))
 
 	return &App{
 		Cfg:         cfg,

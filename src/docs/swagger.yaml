@@ -1,0 +1,112 @@
+basePath: /
+definitions:
+  ginadp.ErrorResponse:
+    properties:
+      error:
+        properties:
+          code:
+            type: string
+          message:
+            type: string
+        type: object
+    type: object
+  ginadp.ReqOTPRequest:
+    properties:
+      phone:
+        type: string
+    required:
+    - phone
+    type: object
+  ginadp.VerifyOTPRequest:
+    properties:
+      otp:
+        type: string
+      phone:
+        type: string
+    required:
+    - otp
+    - phone
+    type: object
+  ginadp.VerifyOTPResponse:
+    properties:
+      token:
+        type: string
+      user: {}
+    type: object
+info:
+  contact: {}
+  description: OTP via Redis, users via MySQL (GORM), JWT in next phase.
+  title: JWT+OTP Auth API
+  version: "0.1"
+paths:
+  /v1/auth/otp/request:
+    post:
+      consumes:
+      - application/json
+      description: Generates OTP and stores hash in Redis (rate limited).
+      parameters:
+      - description: Phone
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/ginadp.ReqOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginadp.ErrorResponse'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ginadp.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginadp.ErrorResponse'
+      summary: Request OTP
+      tags:
+      - Auth
+  /v1/auth/otp/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verifies OTP; creates user if not exists; returns token placeholder.
+      parameters:
+      - description: Phone & OTP
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/ginadp.VerifyOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ginadp.VerifyOTPResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginadp.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginadp.ErrorResponse'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ginadp.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginadp.ErrorResponse'
+      summary: Verify OTP
+      tags:
+      - Auth
+swagger: "2.0"

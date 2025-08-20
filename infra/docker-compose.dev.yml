@@ -6,6 +6,7 @@ networks:
 
 services:
   api:
+    container_name: go-api
     build:
       context: ..
       dockerfile: infra/server/Dockerfile
@@ -16,10 +17,11 @@ services:
       - ./../src:/app/src
     env_file:
       - ./../src/.env
-      - ./.env
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
     ports:
       - "${API_PORT}:8080"
     healthcheck:
@@ -42,6 +44,9 @@ services:
       - mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p ${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks: [appnet]
 
   phpmyadmin:
@@ -62,6 +67,7 @@ services:
 
   redis:
     image: redis:${REDIS_VERSION}
+    container_name: go-redis
     command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "${REDIS_PORT}:6379"
