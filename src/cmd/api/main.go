@@ -9,8 +9,11 @@ import (
 
 // @title           JWT+OTP Auth API
 // @version         0.1
-// @description     OTP via Redis, users via MySQL (GORM), JWT in next phase.
 // @BasePath        /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer {token}" to authenticate.
 func main() {
 	a, err := app.Build()
 	if err != nil {

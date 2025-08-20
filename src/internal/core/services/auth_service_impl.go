@@ -4,18 +4,20 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 
 	"github.com/PixyBoy/jwt-auth-go/internal/core/domain"
 	"github.com/PixyBoy/jwt-auth-go/internal/core/ports"
 	"github.com/PixyBoy/jwt-auth-go/internal/pkg/util"
 	"github.com/rs/zerolog"
+
+	"time"
 )
 
 type AuthServiceImpl struct {
 	otpStore    ports.OTPStore
 	rateLimiter ports.RateLimiter
 	userRepo    ports.UserRepository
+	issuer      ports.TokenIssuer
 	log         zerolog.Logger
 
 	otpDigits          int
@@ -23,6 +25,8 @@ type AuthServiceImpl struct {
 	otpMaxAttempts     int
 	otpRateLimitMax    int
 	otpRateLimitWindow int
+
+	jwtTTL time.Duration
 }
 
 func NewAuthService(
@@ -35,6 +39,7 @@ func NewAuthService(
 	otpMaxAttempts int,
 	otpRateLimitMax int,
 	otpRateLimitWindow int,
+	jwtTTL time.Duration,
 ) AuthService {
 	return &AuthServiceImpl{
 		otpStore:    otpStore,
@@ -47,6 +52,7 @@ func NewAuthService(
 		otpMaxAttempts:     otpMaxAttempts,
 		otpRateLimitMax:    otpRateLimitMax,
 		otpRateLimitWindow: otpRateLimitWindow,
+		jwtTTL:             jwtTTL,
 	}
 }
 
@@ -114,7 +120,9 @@ func (s *AuthServiceImpl) VerifyOTP(ctx context.Context, phone, otp string) (str
 
 	_ = s.otpStore.Delete(phone)
 
-	token := fmt.Sprintf("verified-user-%d", user.ID)
-
+	token, err := s.issuer.Issue(user.ID, user.Phone, s.jwtTTL)
+	if err != nil {
+		return "", err
+	}
 	return token, nil
 }
