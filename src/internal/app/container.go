@@ -83,6 +83,7 @@ func Build() (*App, error) {
 	pg.Use(authz)
 	pg.GET("users/me", ginadp.GetMeHandler(userRepo))
 	pg.GET("users/:id", ginadp.GetUserByIDHandler(userRepo))
+	pg.GET("users", ginadp.ListUsersHandler(userRepo))
 
 	return &App{
 		Cfg:         cfg,

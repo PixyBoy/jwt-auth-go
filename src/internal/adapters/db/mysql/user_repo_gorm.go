@@ -54,19 +54,32 @@ func (r *UserRepoGorm) Create(u *domain.User) (*domain.User, error) {
 }
 
 func (r *UserRepoGorm) List(search string, page, perPage int) ([]domain.User, int64, error) {
+	if page <= 0 {
+		page = 1
+	}
+	if perPage <= 0 || perPage > 200 {
+		perPage = 20
+	}
 	var ms []models.User
 	q := r.db.Model(&models.User{})
 	if search != "" {
 		q = q.Where("phone LIKE ?", "%"+search+"%")
 	}
+
 	var total int64
 	if err := q.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := q.Offset((page - 1) * perPage).Limit(perPage).Find(&ms).Error; err != nil {
+
+	if err := q.
+		Offset((page - 1) * perPage).
+		Limit(perPage).
+		Order("id DESC").
+		Find(&ms).Error; err != nil {
 		return nil, 0, err
 	}
-	var res []domain.User
+
+	res := make([]domain.User, 0, len(ms))
 	for _, m := range ms {
 		res = append(res, *models.ToDomainUser(&m))
 	}
