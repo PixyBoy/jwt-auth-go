@@ -7,6 +7,10 @@ import (
 	"github.com/PixyBoy/jwt-auth-go/internal/app"
 )
 
+// @title           JWT+OTP Auth API
+// @version         0.1
+// @description     OTP via Redis, users via MySQL (GORM), JWT in next phase.
+// @BasePath        /
 func main() {
 	a, err := app.Build()
 	if err != nil {

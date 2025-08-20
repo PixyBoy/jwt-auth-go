@@ -32,7 +32,7 @@ type Config struct {
 		Secret string        `mapstructure:"JWT_SECRET"`
 		TTL    time.Duration `mapstructure:"-"`
 		TTLMin int           `mapstructure:"JWT_TTL_MINUTES"`
-	}
+	} `mapstructure:",squash"`
 
 	OTP struct {
 		Digits          int `mapstructure:"OTP_DIGITS"`
@@ -40,7 +40,8 @@ type Config struct {
 		MaxAttempts     int `mapstructure:"OTP_MAX_ATTEMPTS"`
 		RateLimitMax    int `mapstructure:"OTP_RATE_LIMIT_MAX"`
 		RateLimitWindow int `mapstructure:"OTP_RATE_LIMIT_WINDOW_SECONDS"`
-	}
+		BlockWindowSec  int `mapstructure:"OTP_BLOCK_WINDOW_SECONDS"`
+	} `mapstructure:",squash"`
 }
 
 func Load() (*Config, error) {

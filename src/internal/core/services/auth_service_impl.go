@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"strconv"
 
 	"github.com/PixyBoy/jwt-auth-go/internal/core/domain"
 	"github.com/PixyBoy/jwt-auth-go/internal/core/ports"
@@ -52,8 +51,7 @@ func NewAuthService(
 }
 
 func (s *AuthServiceImpl) RequestOTP(ctx context.Context, phone string) error {
-	allowed, count, err := s.rateLimiter.Allow(phone, s.otpRateLimitMax, s.otpRateLimitWindow)
-	fmt.Printf(strconv.Itoa(count))
+	allowed, _, err := s.rateLimiter.Allow(phone, s.otpRateLimitMax, s.otpRateLimitWindow)
 	if err != nil {
 		return err
 	}
