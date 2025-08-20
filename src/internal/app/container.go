@@ -62,7 +62,7 @@ func Build() (*App, error) {
 
 	// Services
 	authSvc := services.NewAuthService(
-		otpStore, rateLimiter, userRepo, log,
+		otpStore, rateLimiter, userRepo, jwtIssuer, log,
 		cfg.OTP.Digits,
 		cfg.OTP.TTLSeconds,
 		cfg.OTP.MaxAttempts,

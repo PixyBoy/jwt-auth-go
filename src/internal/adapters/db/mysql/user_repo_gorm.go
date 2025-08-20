@@ -23,7 +23,11 @@ func (r *UserRepoGorm) FindByID(id int64) (*domain.User, error) {
 		}
 		return nil, err
 	}
-	return models.ToDomainUser(&m), nil
+	u := models.ToDomainUser(&m)
+	if u == nil {
+		println("ToDomainUser returned nil for user")
+	}
+	return u, nil
 }
 
 func (r *UserRepoGorm) FindByPhone(phone string) (*domain.User, error) {
@@ -34,7 +38,11 @@ func (r *UserRepoGorm) FindByPhone(phone string) (*domain.User, error) {
 		}
 		return nil, err
 	}
-	return models.ToDomainUser(&m), nil
+	u := models.ToDomainUser(&m)
+	if u == nil {
+		println("ToDomainUser returned nil for user with phone:", phone)
+	}
+	return u, nil
 }
 
 func (r *UserRepoGorm) Create(u *domain.User) (*domain.User, error) {

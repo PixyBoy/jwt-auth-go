@@ -1,5 +1,14 @@
 basePath: /
 definitions:
+  domain.User:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      phone:
+        type: string
+    type: object
   ginadp.ErrorResponse:
     properties:
       error:
@@ -35,7 +44,6 @@ definitions:
     type: object
 info:
   contact: {}
-  description: OTP via Redis, users via MySQL (GORM), JWT in next phase.
   title: JWT+OTP Auth API
   version: "0.1"
 paths:
@@ -109,4 +117,64 @@ paths:
       summary: Verify OTP
       tags:
       - Auth
+  /v1/users/{id}:
+    get:
+      description: Returns details of a specific user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.User'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - users
+  /v1/users/me:
+    get:
+      description: Returns details of the logged in user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.User'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer {token}" to authenticate.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

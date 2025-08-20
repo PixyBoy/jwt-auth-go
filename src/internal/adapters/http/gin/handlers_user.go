@@ -14,7 +14,7 @@ import (
 // @Tags users
 // @Security BearerAuth
 // @Produce json
-// @Success 200 {object} User
+// @Success 200 {object} domain.User
 // @Failure 401 {object} map[string]string
 // @Router /v1/users/me [get]
 func GetMeHandler(userRepo ports.UserRepository) gin.HandlerFunc {
@@ -44,7 +44,7 @@ func GetMeHandler(userRepo ports.UserRepository) gin.HandlerFunc {
 // @Security BearerAuth
 // @Produce json
 // @Param id path int true "User ID"
-// @Success 200 {object} User
+// @Success 200 {object} domain.User
 // @Failure 401 {object} map[string]string
 // @Failure 404 {object} map[string]string
 // @Router /v1/users/{id} [get]

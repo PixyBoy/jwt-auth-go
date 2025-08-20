@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 
 	"github.com/PixyBoy/jwt-auth-go/internal/core/domain"
 	"github.com/PixyBoy/jwt-auth-go/internal/core/ports"
@@ -33,6 +34,7 @@ func NewAuthService(
 	otpStore ports.OTPStore,
 	rateLimiter ports.RateLimiter,
 	userRepo ports.UserRepository,
+	issuer ports.TokenIssuer,
 	log zerolog.Logger,
 	otpDigits int,
 	otpTTLSeconds int,
@@ -45,6 +47,7 @@ func NewAuthService(
 		otpStore:    otpStore,
 		rateLimiter: rateLimiter,
 		userRepo:    userRepo,
+		issuer:      issuer,
 		log:         log,
 
 		otpDigits:          otpDigits,
@@ -107,7 +110,7 @@ func (s *AuthServiceImpl) VerifyOTP(ctx context.Context, phone, otp string) (str
 
 	user, err := s.userRepo.FindByPhone(phone)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("db error: %w", err)
 	}
 	if user == nil {
 		user, err = s.userRepo.Create(&domain.User{
@@ -122,7 +125,8 @@ func (s *AuthServiceImpl) VerifyOTP(ctx context.Context, phone, otp string) (str
 
 	token, err := s.issuer.Issue(user.ID, user.Phone, s.jwtTTL)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("issue token failed: %w", err)
 	}
+
 	return token, nil
 }
